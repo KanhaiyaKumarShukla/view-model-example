@@ -1,0 +1,63 @@
+ ------------------------ View Model ----------------------------
+ Using normal Activity or Fragment let say you have shown something on screen, but when you do configuration changes (like screen rotations)
+ The activity will restart and the data that you are showing on screen will reload and initialize with default value.
+ To avoid this ViewModel is used. It is designed to designed to store and manage UI-related data in a lifecycle-aware manner, i.e.,  it survives configuration changes
+ (like screen rotations) and is automatically cleared when the associated UI controller (such as an Activity or Fragment) is destroyed.
+ The system may call onCreate() several times throughout the existence of an activity, such as when a device screen is rotated. The ViewModel exists from when you first request a ViewModel until the activity is finished and destroyed.
+
+
+
+How to use it:
+
+step-1 : create a new class which implement ViewModel as:
+      class UserViewModel : ViewModel(){
+           // you can implement any property or method
+      }
+      It should never access your view hierarchy or hold a reference back to the Activity or the Fragment.
+
+step-2: In MainActivity you can access the viewModel using its instance using ViewModelProvider class as follows:
+       public constructor ViewModelProvider(
+           owner: ViewModelStoreOwner
+       )
+       here we will pass "this" as the owner is the activity / fragment itself.
+
+step-3: The above ViewModelProvider(---) is only a constructor. To extract viewModel, we will use get() method of ViewModelProvider class:
+       @MainThread
+       fun <T : ViewModel> get(modelClass: KClass<T>): T
+
+       It will return the instance of ViewModel.
+
+       for example lets say we have "UserViewModel" as ViewModel. Then we can create instance as:
+       val viewModel :UserViewModel = ViewModelProvider(this).get(UserViewModel::class.java)
+
+step-4: Let say we need to pass some parameter in "UserViewModel" class. but we have the problem that we send the reference class as we see in step-3.
+       So we will use "ViewModelProvider.Factory" interface.
+       we will create the class which implement "ViewModelProvider.Factory" interface as :
+
+       class UserViewModelFactory ( val param1 : D, val Param2: D): ViewModelProvider.Factory {
+             override fun <T : ViewModel> create(modelClass: Class<T>): T {   // this will create viewModel and return it
+                  return UserViewModel(Param1, Param2) as T
+             }
+       }
+
+       now we can pass parameter in "UserViewModel" class as:
+
+       class UserViewModel (param1: D, param2: D) :ViewModel{
+           // do something
+       }
+
+       now we will use this below ViewModelProvider constructor as:
+
+       public constructor ViewModelProvider(
+           owner: ViewModelStoreOwner,
+           factory: ViewModelProvider.Factory
+       )
+
+       we will create viewModel instance as follows:
+       val viewModel :UserViewModel=ViewModelProvider(this, UserViewModelFactory).get(UserViewModel::class.java)
+
+
+
+ * You can better understand its usage from : https://www.geeksforgeeks.org/viewmodel-in-android-architecture-components/
+
+ * The Activity or the Fragment should be able to observe changes in the ViewModel. ViewModels usually expose this information via androidx.lifecycle.LiveData or Android Data Binding.
